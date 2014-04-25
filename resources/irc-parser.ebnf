@@ -1,0 +1,13 @@
+<message>		= prefix command params trailing
+prefix			= <":"> hostchars <space>
+				| <"">
+<hostchars>		= #"[a-zA-Z0-9!~@\.\*]+"
+command			= nospcrlfcl | code
+params			= (<space> param)*
+<param>			= nospcrlfcl
+
+trailing		= <space> <":"> #"[^\u0000\u000A\u000D]*"
+				| <"">
+<nospcrlfcl>	= #"[^\u0000\u000A\u000D\u0020\u003A]+"
+<code>			= #"\d{3}"
+<space>			= #" "+
