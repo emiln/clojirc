@@ -25,9 +25,9 @@ channel every few seconds:
 (cmd/message! network "#dat2" "Hello, friends.")
 
 ;; Send a message every few seconds to keep the channel entertained.
-(go-loop []
-  (<! (timeout (+ 10000 (rand-int 10000))))
-  (message! network "#dat2" "I am still here, guys!")
+(async/go-loop []
+  (async/<! (async/timeout (+ 10000 (rand-int 10000))))
+  (cmd/message! network "#dat2" "I am still here, guys!")
   (recur))
 ```
 
