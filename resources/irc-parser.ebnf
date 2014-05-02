@@ -1,7 +1,7 @@
 <message>		= prefix command params trailing
 prefix			= <":"> hostchars <space>
 				| <"">
-<hostchars>		= #"[a-zA-Z0-9!~@\.\*]+"
+<hostchars>		= #"[^\s]+"
 command			= nospcrlfcl | code
 params			= (<space> param)*
 <param>			= nospcrlfcl
