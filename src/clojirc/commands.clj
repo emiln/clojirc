@@ -49,7 +49,7 @@
     network
     (match [message]
       [nil] "AWAY"
-      [_] (format "AWAY %s" message))))
+      [_] (format "AWAY :%s" message))))
 
 (defn cnotice!
   "Parameters: <nickname> <channel> <message>
@@ -174,7 +174,7 @@
   [network error-message]
   (network-send
     network
-    (format "ERROR %s" error-message)))
+    (format "ERROR :%s" error-message)))
 
 (defn help!
   "Parameters: None
