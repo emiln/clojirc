@@ -2,7 +2,7 @@
 
 A Clojure library designed to easily communicate with IRC servers.
 
-![status](https://www.codeship.io/projects/3a837a90-b478-0131-2b1e-2e00be40f788/status)
+![status](https://www.codeship.io/projects/3a837a90-b478-0131-2b1e-2e00be40f788/status?branch=master)
 
 ## Usage
 
