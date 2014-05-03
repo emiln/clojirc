@@ -87,3 +87,44 @@
     (do (cmd/ison! network "phone" "trillian" "WiZ" "jarlek" "Avalon"
                    "Angel" "Monstah" "syrk")
       (async/<!! channel))))
+
+;; JOIN command.
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "JOIN #foobar"
+    (do (cmd/join! network {"#foobar" nil})
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "JOIN &foo fubar"
+    (do (cmd/join! network {"&foo" "fubar"})
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "JOIN #foo,&bar fubar"
+    (do (cmd/join! network {"#foo" "fubar"
+                            "&bar" nil})
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "JOIN #foo,#bar fubar,foobar"
+    (do (cmd/join! network {"#foo" "fubar"
+                            "#bar" "foobar"})
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "JOIN #foo,#bar"
+    (do (cmd/join! network {"#foo" nil
+                            "#bar" nil})
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "JOIN 0"
+    (do (cmd/join! network 0)
+      (async/<!! channel))))
