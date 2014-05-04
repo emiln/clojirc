@@ -271,12 +271,40 @@
   (network-send
     network
     (if (map? chan-pass-map)
-      (let [chans (map #(key %) (reverse (sort-by val chan-pass-map)))
-            passes (filter (complement nil?)(map #(val %) (reverse (sort-by val chan-pass-map))))]
+      (let [chans (map key (reverse (sort-by val chan-pass-map)))
+            passes (filter identity (map val (reverse (sort-by val chan-pass-map))))]
         (match [(first passes)]
-               [nil] (format "JOIN %s" (clojure.string/join "," chans))
-               [_] (format "JOIN %s %s" (clojure.string/join "," chans) (clojure.string/join "," passes))))
+               [nil] (format "JOIN %s" (str/join "," chans))
+               [_] (format "JOIN %s %s" (str/join "," chans) (str/join "," passes))))
       (format "JOIN %s" chan-pass-map))))
+
+(defn kick!
+  "Parameters: <channel> *( \",\" <channel> ) <user> *( \",\" <user> )
+               [<comment>]
+
+  The KICK command can be used to request the forced removal of a user
+  from a channel.  It causes the <user> to PART from the <channel> by
+  force.  For the message to be syntactically correct, there MUST be
+  either one channel parameter and multiple user parameter, or as many
+  channel parameters as there are user parameters.  If a \"comment\" is
+  given, this will be sent instead of the default message, the nickname
+  of the user issuing the KICK.
+
+  The server MUST NOT send KICK messages with multiple channels or
+  users to clients.  This is necessarily to maintain backward
+  compatibility with old client software."
+  [network channels users & [message]]
+  (letfn [(coll-or-elem [coll] 
+                (if (string? coll) 
+                  coll
+                  (str/join "," coll)))]
+  (network-send
+    network
+    (match [message]
+           [nil] (format "KICK %s %s" (coll-or-elem channels) (coll-or-elem users))
+           [_] (format "KICK %s %s :%s" (coll-or-elem channels) (coll-or-elem users) message)))))
+
+
   
 
 (defn message!

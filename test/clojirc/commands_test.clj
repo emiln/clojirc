@@ -128,3 +128,17 @@
     "JOIN 0"
     (do (cmd/join! network 0)
       (async/<!! channel))))
+
+;;KICK command.
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "KICK &Melbourne Matthew"
+    (do (cmd/kick! network "&Melbourne" "Matthew")
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "KICK #Finnish John :Speaking English"
+    (do (cmd/kick! network "#Finnish" "John" "Speaking English")
+      (async/<!! channel))))
