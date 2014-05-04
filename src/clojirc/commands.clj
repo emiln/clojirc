@@ -424,3 +424,97 @@
     (match [message]
       [nil] "QUIT"
       [msg] (format "QUIT :%s" msg))))
+
+(defn watch!
+  "Parameters: *( ( \"+\" / \"-\" ) <nickname>)
+  
+  Adds or removes a user to a client's server-side friends list. More
+  than one nickname may be specified in a space-separated list, each
+  item prefixed with a \"+\" or \"-\" to designate whether it is being
+  added or removed. Sending the command with no parameters returns the
+  entries in the client's friends list.
+
+  This command is not formally defined in an RFC, but is supported by
+  most major IRC daemons. Support is indicated in a RPL_ISUPPORT reply
+  (numeric 005) with the WATCH keyword and the maximum number of
+  entries a client may have in its friends list."
+  [network nickname & more-nicknames]
+  (network-send
+    network
+    (match [more-nicknames]
+      [nil] (format "WATCH %s" nickname)
+      [_] (format "WATCH %s,%s" nickname (str/join "," more-nicknames)))))
+
+(defn who!
+  "Parameters: [ <mask> [ \"o\" ] ]
+
+  The WHO command is used by a client to generate a query which returns
+  a list of information which 'matches' the <mask> parameter given by
+  the client.  In the absence of the <mask> parameter, all visible
+  (users who aren't invisible (user mode +i) and who don't have a
+  common channel with the requesting client) are listed.  The same
+  result can be achieved by using a <mask> of \"0\" or any wildcard which
+  will end up matching every visible user.
+
+  The <mask> passed to WHO is matched against users' host, server, real
+  name and nickname if the channel <mask> cannot be found.
+  
+  If the \"o\" parameter is passed only operators are returned according
+  to the <mask> supplied."
+  [network mask & [flag]]
+  (network-send
+    network
+    (match [flag]
+      ["o"] (format "WHO %s o" mask)
+      [_] (format "WHO %s" mask))))
+
+(defn whois!
+  "Parameters: [ <target> ] <mask> *( \",\" <mask> )
+
+  This command is used to query information about particular user.
+  The server will answer this command with several numeric messages
+  indicating different statuses of each user which matches the mask (if
+  you are entitled to see them).  If no wildcard is present in the
+  <mask>, any information about that nick which you are allowed to see
+  is presented.
+
+  If the <target> parameter is specified, it sends the query to a
+  specific server.  It is useful if you want to know how long the user
+  in question has been idle as only local server (i.e., the server the
+  user is directly connected to) knows that information, while
+  everything else is globally known.
+
+  Wildcards are allowed in the <target> parameter."
+  [network target-or-mask & masks]
+  (network-send
+    network
+    (match [target-or-mask masks]
+      [_ nil] (format "WHOIS %s" target-or-mask)
+      [(target :guard #(re-find #"\." %)) _]
+      (format "WHOIS %s %s" target (str/join "," masks))
+      [mask _] (format "WHOIS %s" (str/join "," (cons mask masks))))))
+
+(defn whowas!
+  "Parameters: <nickname> *( \",\" <nickname> ) [ <count> [ <target> ] ]
+
+  Whowas asks for information about a nickname which no longer exists.
+  This may either be due to a nickname change or the user leaving IRC.
+  In response to this query, the server searches through its nickname
+  history, looking for any nicks which are lexically the same (no wild
+  card matching here).  The history is searched backward, returning the
+  most recent entry first.  If there are multiple entries, up to
+  <count> replies will be returned (or all of them if no <count>
+  parameter is given).  If a non-positive number is passed as being
+  <count>, then a full search is done.
+
+  Wildcards are allowed in the <target> parameter."
+  [network nickname-or-nicknames & [count target]]
+  (network-send
+    network
+    (->> [(if (coll? nickname-or-nicknames)
+            (str/join "," nickname-or-nicknames)
+            nickname-or-nicknames)
+          count target]
+      (filter identity)
+      (str/join " ")
+      (format "WHOWAS %s"))))
