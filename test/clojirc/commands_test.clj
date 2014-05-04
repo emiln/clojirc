@@ -3,90 +3,67 @@
             [clojirc.commands :as cmd]
             [clojure.core.async :as async]))
 
+;; Define a helper macro.
+(defmacro expect-command
+  [string command]
+  `(let [channel# (clojure.core.async/chan)
+         network# {:to-network channel#}]
+     (expect
+       ~string
+       (do (~(first command) network# ~@(rest command))
+         (clojure.core.async/<!! channel#)))))
+
 ;; Test all commands.
 
 ;; ADMIN command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "ADMIN tolsun.oulu.fi"
-    (do (cmd/admin! network "tolsun.oulu.fi")
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "ADMIN syrk"
-    (do (cmd/admin! network "syrk")
-      (async/<!! channel))))
+(expect-command
+  "ADMIN tolsun.oulu.fi"
+  (cmd/admin! "tolsun.oulu.fi"))
+(expect-command
+  "ADMIN syrk"
+  (cmd/admin! "syrk"))
 
 ;; AWAY command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "AWAY"
-    (do (cmd/away! network)
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "AWAY :Gone to lunch. Back in 5"
-    (do (cmd/away! network "Gone to lunch. Back in 5")
-      (async/<!! channel))))
+(expect-command
+  "AWAY"
+  (cmd/away!))
+(expect-command
+  "AWAY :Gone to lunch. Back in 5"
+  (cmd/away! "Gone to lunch. Back in 5"))
 
 ;; CONNECT command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "CONNECT tolsun.oulu.fi 6667"
-    (do (cmd/connect! network "tolsun.oulu.fi" 6667)
-      (async/<!! channel))))
+(expect-command
+  "CONNECT tolsun.oulu.fi 6667"
+  (cmd/connect! "tolsun.oulu.fi" 6667))
 
 ;; DIE command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "DIE"
-    (do (cmd/die! network)
-      (async/<!! channel))))
+(expect-command
+  "DIE"
+  (cmd/die!))
 
 ;; ERROR command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "ERROR :Server *.fi already exists"
-    (do (cmd/error! network "Server *.fi already exists")
-      (async/<!! channel))))
+(expect-command
+  "ERROR :Server *.fi already exists"
+  (cmd/error! "Server *.fi already exists"))
 
 ;; INFO command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "INFO csd.bu.edu"
-    (do (cmd/info! network "csd.bu.edu")
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "INFO Angel"
-    (do (cmd/info! network "Angel")
-      (async/<!! channel))))
+(expect-command
+  "INFO csd.bu.edu"
+  (cmd/info! "csd.bu.edu"))
+(expect-command
+  "INFO Angel"
+  (cmd/info! "Angel"))
 
 ;; INVITE command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "INVITE Wiz #Twilight_Zone"
-    (do (cmd/invite! network "Wiz" "#Twilight_Zone")
-      (async/<!! channel))))
+(expect-command
+  "INVITE Wiz #Twilight_Zone"
+  (cmd/invite! "Wiz" "#Twilight_Zone"))
 
 ;; ISON command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "ISON phone trillian WiZ jarlek Avalon Angel Monstah syrk"
-    (do (cmd/ison! network "phone" "trillian" "WiZ" "jarlek" "Avalon"
-                   "Angel" "Monstah" "syrk")
-      (async/<!! channel))))
+(expect-command
+  "ISON phone trillian WiZ jarlek Avalon Angel Monstah syrk"
+  (cmd/ison! "phone" "trillian" "WiZ" "jarlek" "Avalon"
+             "Angel" "Monstah" "syrk"))
 
 ;; JOIN command.
 (let [channel (async/chan)
@@ -200,69 +177,39 @@
       (async/<!! channel))))
 
 ;; WATCH command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WATCH +Binky,+Kardeth,-Mikstrup,-Q"
-    (do (cmd/watch! network "+Binky" "+Kardeth" "-Mikstrup" "-Q")
-      (async/<!! channel))))
+(expect-command
+  "WATCH +Binky,+Kardeth,-Mikstrup,-Q"
+  (cmd/watch! "+Binky" "+Kardeth" "-Mikstrup" "-Q"))
 
 ;; WHO command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHO *.fi"
-    (do (cmd/who! network "*.fi")
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHO jto* o"
-    (do (cmd/who! network "jto*" "o")
-      (async/<!! channel))))
+(expect-command
+  "WHO *.fi"
+  (cmd/who! "*.fi"))
+(expect-command
+  "WHO jto* o"
+  (cmd/who! "jto*" "o"))
 
 ;; WHOIS command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHOIS wiz"
-    (do (cmd/whois! network "wiz")
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHOIS eff.org trillian"
-    (do (cmd/whois! network "eff.org" "trillian")
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHOIS eff.org wiz,trillian"
-    (do (cmd/whois! network "eff.org" "wiz" "trillian")
-      (async/<!! channel))))
+(expect-command
+  "WHOIS wiz"
+  (cmd/whois! "wiz"))
+(expect-command
+  "WHOIS eff.org trillian"
+  (cmd/whois! "eff.org" "trillian"))
+(expect-command
+  "WHOIS eff.org wiz,trillian"
+  (cmd/whois! "eff.org" "wiz" "trillian"))
 
 ;; WHOWAS command.
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHOWAS Wiz"
-    (do (cmd/whowas! network "Wiz")
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHOWAS Mermaid 9"
-    (do (cmd/whowas! network "Mermaid" 9)
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHOWAS Trillian 1 *.edu"
-    (do (cmd/whowas! network "Trillian" 1 "*.edu")
-      (async/<!! channel))))
-(let [channel (async/chan)
-      network {:to-network channel}]
-  (expect
-    "WHOWAS Binky,Binkster,Binksterer 5 srs.biz"
-    (do (cmd/whowas! network ["Binky" "Binkster" "Binksterer"] 5 "srs.biz")
-      (async/<!! channel))))
+(expect-command
+  "WHOWAS Wiz"
+  (cmd/whowas! "Wiz"))
+(expect-command
+  "WHOWAS Mermaid 9"
+  (cmd/whowas! "Mermaid" 9))
+(expect-command
+  "WHOWAS Trillian 1 *.edu"
+  (cmd/whowas! "Trillian" 1 "*.edu"))
+(expect-command
+  "WHOWAS Binky,Binkster,Binksterer 5 srs.biz"
+  (cmd/whowas! ["Binky" "Binkster" "Binksterer"] 5 "srs.biz"))
