@@ -375,11 +375,7 @@
   [network & [remote mask]]
   (network-send
     network
-    (match [remote mask]
-           [nil nil] "LINKS"
-           [_ nil] (format "LINKS %s" remote)
-           [nil _] (format "LINKS %s" mask)
-           [_ _] (format "LINKS %s %s" remote mask))))
+    (str/join " " (filter identity ["LINKS" remote mask]))))
 
 (defn list!
   "Parameters: [ <channel> *( \",\" <channel> ) [ <target> ] ]
@@ -399,11 +395,7 @@
                 (if (string? coll) 
                   coll
                   (str/join "," coll)))]
-      (match [channels target]
-             [nil nil] "LIST"
-             [_ nil] (format "LIST %s" (coll-or-elem channels))
-             [nil _] (format "LIST %s" target)
-             [_ _] (format "LIST %s %s" (coll-or-elem channels) target)))))
+      (str/join " " (filter identity ["LIST" (coll-or-elem channels) target])))))
 
 (defn message!
   [network receiver message]
