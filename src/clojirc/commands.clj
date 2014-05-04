@@ -304,8 +304,106 @@
            [nil] (format "KICK %s %s" (coll-or-elem channels) (coll-or-elem users))
            [_] (format "KICK %s %s :%s" (coll-or-elem channels) (coll-or-elem users) message)))))
 
+(defn kill!
+  "Parameters: <nickname> <comment>
 
-  
+  The KILL command is used to cause a client-server connection to be
+  closed by the server which has the actual connection.  Servers
+  generate KILL messages on nickname collisions.  It MAY also be
+  available available to users who have the operator status.
+
+  Clients which have automatic reconnect algorithms effectively make
+  this command useless since the disconnection is only brief.  It does
+  however break the flow of data and can be used to stop large amounts
+  of 'flooding' from abusive users or accidents.  Abusive users usually
+  don't care as they will reconnect promptly and resume their abusive
+  behaviour.  To prevent this command from being abused, any user may
+  elect to receive KILL messages generated for others to keep an 'eye'
+  on would be trouble spots.
+
+  In an arena where nicknames are REQUIRED to be globally unique at all
+  times, KILL messages are sent whenever 'duplicates' are detected
+  (that is an attempt to register two users with the same nickname) in
+  the hope that both of them will disappear and only 1 reappear.
+
+  When a client is removed as the result of a KILL message, the server
+  SHOULD add the nickname to the list of unavailable nicknames in an
+  attempt to avoid clients to reuse this name immediately which is
+  usually the pattern of abusive behaviour often leading to useless
+  \"KILL loops\".  See the \"IRC Server Protocol\" document [IRC-SERVER]
+  for more information on this procedure.
+
+  The comment given MUST reflect the actual reason for the KILL.  For
+  server-generated KILLs it usually is made up of details concerning
+  the origins of the two conflicting nicknames.  For users it is left
+  up to them to provide an adequate reason to satisfy others who see
+  it.  To prevent/discourage fake KILLs from being generated to hide
+  the identify of the KILLer, the comment also shows a 'kill-path'
+  which is updated by each server it passes through, each prepending
+  its name to the path."
+  [network nickname comment]
+  (network-send
+    network
+    (format "KILL %s :%s" nickname comment)))
+
+(defn knock!
+  "Parameters: <channel> [ <message> ]
+
+  Sends a NOTICE to an invitation-only <channel> with an optional 
+  <message>, requesting an invite.
+
+  This command is not formally defined by an RFC, but is supported by 
+  most major IRC daemons. Support is indicated in a RPL_ISUPPORT reply 
+  (numeric 005) with the KNOCK keyword."
+  [network channel & [message]]
+  (network-send
+    network
+    (match [message]
+           [nil] (format "KNOCK %s" channel)
+           [_] (format "KNOCK %s :%s" channel message))))
+
+(defn links!
+  "Parameters: [ [ <remote server> ] <server mask> ]
+
+  With LINKS, a user can list all servernames, which are known by the
+  server answering the query.  The returned list of servers MUST match
+  the mask, or if no mask is given, the full list is returned.
+
+  If <remote server> is given in addition to <server mask>, the LINKS
+  command is forwarded to the first server found that matches that name
+  (if any), and that server is then required to answer the query."
+  [network & [remote mask]]
+  (network-send
+    network
+    (match [remote mask]
+           [nil nil] "LINKS"
+           [_ nil] (format "LINKS %s" remote)
+           [nil _] (format "LINKS %s" mask)
+           [_ _] (format "LINKS %s %s" remote mask))))
+
+(defn list!
+  "Parameters: [ <channel> *( \",\" <channel> ) [ <target> ] ]
+
+  The list command is used to list channels and their topics.  If the
+  <channel> parameter is used, only the status of that channel is
+  displayed.
+
+  If the <target> parameter is specified, the request is forwarded to
+  that server which will generate the reply.
+
+  Wildcards are allowed in the <target> parameter."
+  [network & [channels target]]
+  (network-send
+    network
+    (letfn [(coll-or-elem [coll] 
+                (if (string? coll) 
+                  coll
+                  (str/join "," coll)))]
+      (match [channels target]
+             [nil nil] "LIST"
+             [_ nil] (format "LIST %s" (coll-or-elem channels))
+             [nil _] (format "LIST %s" target)
+             [_ _] (format "LIST %s %s" (coll-or-elem channels) target)))))
 
 (defn message!
   [network receiver message]

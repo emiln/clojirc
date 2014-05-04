@@ -129,7 +129,7 @@
     (do (cmd/join! network 0)
       (async/<!! channel))))
 
-;;KICK command.
+;; KICK command.
 (let [channel (async/chan)
       network {:to-network channel}]
   (expect
@@ -141,4 +141,60 @@
   (expect
     "KICK #Finnish John :Speaking English"
     (do (cmd/kick! network "#Finnish" "John" "Speaking English")
+      (async/<!! channel))))
+
+;; KILL command.
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "KILL PinkPrincess :Being a totes jerk"
+    (do (cmd/kill! network "PinkPrincess" "Being a totes jerk")
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "KILL Mikstrup :Wow, this guy."
+    (do (cmd/kill! network  "Mikstrup" "Wow, this guy.")
+      (async/<!! channel))))
+
+;; KNOCK command.
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "KNOCK #dat2 :Let me in guys, pls."
+    (do (cmd/knock! network "#dat2" "Let me in guys, pls.")
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "KNOCK #clojure :Come on guys."
+    (do (cmd/knock! network "#clojure" "Come on guys.")
+      (async/<!! channel))))
+
+;; LINKS command.
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "LINKS *.au"
+    (do (cmd/links! network "*.au")
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "LINKS *.edu *.bu.edu"
+    (do (cmd/links! network "*.edu" "*.bu.edu")
+      (async/<!! channel))))
+
+;; LIST command.
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "LIST"
+    (do (cmd/list! network)
+      (async/<!! channel))))
+(let [channel (async/chan)
+      network {:to-network channel}]
+  (expect
+    "LIST #twilight_zone,#42"
+    (do (cmd/list! network ["#twilight_zone" "#42"])
       (async/<!! channel))))
