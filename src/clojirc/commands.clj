@@ -391,11 +391,12 @@
   [network & [channels target]]
   (network-send
     network
-    (letfn [(coll-or-elem [coll] 
-                (if (string? coll) 
-                  coll
-                  (str/join "," coll)))]
-      (str/join " " (filter identity ["LIST" (coll-or-elem channels) target])))))
+    (letfn [(coll-elem-or-nil [coll] 
+                (cond 
+                  (string? coll) coll
+                  (coll? coll) (str/join "," coll)
+                  :else nil))]
+      (str/join " " (filter identity ["LIST" (coll-elem-or-nil channels) target])))))
 
 (defn message!
   [network receiver message]
