@@ -10,10 +10,10 @@
   network)
 
 (defn- coll-elem-or-nil [coll] 
-                (cond 
-                  (string? coll) coll
-                  (coll? coll) (str/join "," coll)
-                  :else nil))
+  (cond 
+    (string? coll) coll
+    (coll? coll) (str/join "," coll)
+    :else nil))
   
 ;; Standard slash commands.
 
