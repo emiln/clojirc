@@ -9,6 +9,12 @@
               message)
   network)
 
+(defn- coll-elem-or-nil [coll] 
+  (cond 
+    (string? coll) coll
+    (coll? coll) (str/join "," coll)
+    :else nil))
+  
 ;; Standard slash commands.
 
 (defn admin!
@@ -294,15 +300,11 @@
   users to clients.  This is necessarily to maintain backward
   compatibility with old client software."
   [network channels users & [message]]
-  (letfn [(coll-or-elem [coll] 
-                (if (string? coll) 
-                  coll
-                  (str/join "," coll)))]
   (network-send
     network
     (match [message]
-           [nil] (format "KICK %s %s" (coll-or-elem channels) (coll-or-elem users))
-           [_] (format "KICK %s %s :%s" (coll-or-elem channels) (coll-or-elem users) message)))))
+           [nil] (format "KICK %s %s" (coll-elem-or-nil channels) (coll-elem-or-nil users))
+           [_] (format "KICK %s %s :%s" (coll-elem-or-nil channels) (coll-elem-or-nil users) message))))
 
 (defn kill!
   "Parameters: <nickname> <comment>
@@ -391,24 +393,113 @@
   [network & [channels target]]
   (network-send
     network
-    (letfn [(coll-elem-or-nil [coll] 
-                (cond 
-                  (string? coll) coll
-                  (coll? coll) (str/join "," coll)
-                  :else nil))]
-      (str/join " " (filter identity ["LIST" (coll-elem-or-nil channels) target])))))
+    (str/join " " (filter identity ["LIST" (coll-elem-or-nil channels) target]))))
+
+(defn lusers!
+  "Parameters: [ <mask> [ <target> ] ]
+
+  The LUSERS command is used to get statistics about the size of the
+  IRC network.  If no parameter is given, the reply will be about the
+  whole net.  If a <mask> is specified, then the reply will only
+  
+  concern the part of the network formed by the servers matching the
+  mask.  Finally, if the <target> parameter is specified, the request
+  is forwarded to that server which will generate the reply.
+
+  Wildcards are allowed in the <target> parameter."
+  [network & [mask target]]
+  (network-send
+    network
+    (str/join " " (filter identity ["LUSERS" mask target]))))
+
+(defn mode!
+  "Parameters: <channel> *( ( \"-\" / \"+\" ) *<modes> *<modeparams> )
+
+  The MODE command is provided so that users may query and change the
+  characteristics of a channel.  For more details on available modes
+  and their uses, see \"Internet Relay Chat: Channel Management\" [IRC-
+  CHAN].  Note that there is a maximum limit of three (3) changes per
+  command for modes that take a parameter."
+  [network channel & parameters]
+  (network-send
+    network
+    (str/join " " (filter identity ["MODE" channel (str/join " " parameters)]))))
+
+(defn motd!
+  "Parameters: [ <target> ]
+
+  The MOTD command is used to get the \"Message Of The Day\" of the given
+  server, or current server if <target> is omitted.
+
+  Wildcards are allowed in the <target> parameter."
+  [network & [target]]
+  (network-send
+    network
+    (str/join " " (filter identity ["MOTD" target]))))
+
+(defn names!
+  "Parameters: [ <channel> *( \",\" <channel> ) [ <target> ] ]
+
+  By using the NAMES command, a user can list all nicknames that are
+  visible to him. For more details on what is visible and what is not,
+  see \"Internet Relay Chat: Channel Management\" [IRC-CHAN].  The
+  <channel> parameter specifies which channel(s) to return information
+  about.  There is no error reply for bad channel names.
+
+  If no <channel> parameter is given, a list of all channels and their
+  occupants is returned.  At the end of this list, a list of users who
+  are visible but either not on any channel or not on a visible channel
+  are listed as being on `channel' \"*\".
+
+  If the <target> parameter is specified, the request is forwarded to
+  that server which will generate the reply.
+
+  Wildcards are allowed in the <target> parameter."
+  [network & [channels target]]
+  (network-send
+    network
+    (str/join " " (filter identity ["NAMES" (coll-elem-or-nil channels) target]))))
+
+(defn namesx!
+  "Parameters: None
+  
+  Instructs the server to send names in an RPL_NAMES reply prefixed 
+  with their respective channel status. For example:
+  
+  With NAMESX
+
+    :irc.server.net 353 Phyre = #SomeChannel :@+WiZ
+  
+  Without NAMESX
+
+    :irc.server.net 353 Phyre = #SomeChannel :WiZ
+  
+  This command can ONLY be used if the NAMESX keyword is returned in
+  an RPL_ISUPPORT (numeric 005) reply. It may also be combined with 
+  the UHNAMES command.
+  
+  This command is not formally defined in an RFC, but is recognized 
+  by most major IRC daemons."
+  [network]
+  (network-send
+    network
+    "PROTOCTL NAMESX"))
+
+(defn nick!
+  "Parameters: <nickname>
+
+  NICK command is used to give user a nickname or change the existing
+  one."
+  [network nick]
+  (network-send
+    network
+    (format "NICK %s" nick)))
 
 (defn message!
   [network receiver message]
   (network-send
     network
     (format "PRIVMSG %s :%s" receiver message)))
-
-(defn nick!
-  [network nick]
-  (network-send
-    network
-    (format "NICK %s")))
 
 (defn quit!
   [network & [message]]

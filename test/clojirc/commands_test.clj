@@ -128,6 +128,84 @@
   "LIST #twilight_zone,#42"
   (cmd/list! ["#twilight_zone" "#42"]))
 
+;; LUSERS command.
+(expect-command
+  "LUSERS"
+  (cmd/lusers!))
+(expect-command
+  "LUSERS =PinkPrincess tolsun.oulu.fi"
+  (cmd/lusers! "=PinkPrincess" "tolsun.oulu.fi"))
+
+;; MODE command.
+(expect-command
+  "MODE #Finnish +imI *!*@*.fi"
+  (cmd/mode! "#Finnish" "+imI" "*!*@*.fi"))
+(expect-command
+  "MODE #Finnish +o Kilroy"
+  (cmd/mode! "#Finnish" "+o" "Kilroy"))
+(expect-command
+  "MODE #Finnish +v Wiz"
+  (cmd/mode! "#Finnish" "+v" "Wiz"))
+(expect-command
+  "MODE #Fins -s"
+  (cmd/mode! "#Fins" "-s"))
+(expect-command
+  "MODE #42 +k oulu"
+  (cmd/mode! "#42" "+k" "oulu"))
+(expect-command
+  "MODE #42 -k oulu"
+  (cmd/mode! "#42" "-k" "oulu"))
+(expect-command
+  "MODE #eu-opers +l 10"
+  (cmd/mode! "#eu-opers" "+l" "10"))
+(expect-command
+  "MODE &oulu +b"
+  (cmd/mode! "&oulu" "+b" ))
+(expect-command
+  "MODE &oulu +b *!*@*"
+  (cmd/mode! "&oulu" "+b" "*!*@*"))
+(expect-command
+  "MODE &oulu +b *!*@*.edu +e *!*@*.bu.edu"
+  (cmd/mode! "&oulu" "+b *!*@*.edu" "+e *!*@*.bu.edu"))
+(expect-command
+  "MODE #bu +be *!*@*.edu *!*@*.bu.edu"
+  (cmd/mode! "#bu" "+be" "*!*@*.edu" "*!*@*.bu.edu"))
+(expect-command
+  "MODE #meditation e"
+  (cmd/mode! "#meditation" "e"))
+(expect-command
+  "MODE #meditation I"
+  (cmd/mode! "#meditation" "I"))
+(expect-command
+  "MODE !12345ircd O"
+  (cmd/mode! "!12345ircd" "O"))
+
+;; MOTD command.
+(expect-command
+  "MOTD"
+  (cmd/motd!))
+(expect-command
+  "MOTD tolsun.oulu.fi"
+  (cmd/motd! "tolsun.oulu.fi"))
+
+;; NAMES command.
+(expect-command
+  "NAMES"
+  (cmd/names!))
+(expect-command
+  "NAMES #twilight_zone,#42"
+  (cmd/names! ["#twilight_zone" "#42"]))
+
+;; NAMESX command.
+(expect-command
+  "PROTOCTL NAMESX"
+  (cmd/namesx!))
+
+;; NICK command.
+(expect-command
+  "NICK Wiz"
+  (cmd/nick! "Wiz"))
+
 ;; WATCH command.
 (expect-command
   "WATCH +Binky,+Kardeth,-Mikstrup,-Q"
