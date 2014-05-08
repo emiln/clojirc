@@ -206,6 +206,48 @@
   "NICK Wiz"
   (cmd/nick! "Wiz"))
 
+;; NOTICE command.
+(expect-command
+  "NOTICE PinkPrincess :Greetings, friend."
+  (cmd/notice! "PinkPrincess", "Greetings, friend."))
+(expect-command
+  "NOTICE #dat2 :Hi boise"
+  (cmd/notice! "#dat2" "Hi boise"))
+
+;; OPER command.
+(expect-command
+  "OPER foo bar"
+  (cmd/oper! "foo" "bar"))
+
+;; PART command.
+(expect-command
+  "PART #twilight_zone"
+  (cmd/part! "#twilight_zone"))
+(expect-command
+  "PART #oz-ops,&group5"
+  (cmd/part! ["#oz-ops" "&group5"]))
+(expect-command
+  "PART #playzone :I lost"
+  (cmd/part! "#playzone" "I lost"))
+
+;; PASS command.
+(expect-command
+  "PASS secretpasswordhere"
+  (cmd/pass! "secretpasswordhere"))
+
+;; PING command.
+(expect-command
+  "PING tolsun.oulu.fi"
+  (cmd/ping! "tolsun.oulu.fi"))
+(expect-command
+  "PING WiZ tolsun.oulu.fi"
+  (cmd/ping! "WiZ" "tolsun.oulu.fi"))
+
+;; PONG command.
+(expect-command
+  "PONG csd.bu.edu tolsun.oulu.fi"
+  (cmd/pong! "csd.bu.edu" "tolsun.oulu.fi"))
+
 ;; WATCH command.
 (expect-command
   "WATCH +Binky,+Kardeth,-Mikstrup,-Q"

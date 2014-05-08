@@ -495,6 +495,101 @@
     network
     (format "NICK %s" nick)))
 
+(defn notice!
+  "Parameters: <msgtarget> <text>
+
+  The NOTICE command is used similarly to PRIVMSG.  The difference
+  between NOTICE and PRIVMSG is that automatic replies MUST NEVER be
+  sent in response to a NOTICE message.  This rule applies to servers
+  too - they MUST NOT send any error reply back to the client on
+  receipt of a notice.  The object of this rule is to avoid loops
+  between clients automatically sending something in response to
+  something it received.
+  
+  This command is available to services as well as users.
+
+  This is typically used by services, and automatons (clients with
+  either an AI or other interactive program controlling their actions)."
+  [network target message]
+  (network-send 
+    network
+    (format "NOTICE %s :%s" target message)))
+
+(defn oper!
+  "Parameters: <name> <password>
+
+  A normal user uses the OPER command to obtain operator privileges.
+  The combination of <name> and <password> are REQUIRED to gain
+  Operator privileges.  Upon success, the user will receive a MODE
+  message (see section 3.1.5) indicating the new user modes."
+  [network name password]
+  (network-send 
+    network
+    (str/join " " (filter identity ["OPER" name password]))))
+
+(defn part!
+  "Parameters: <channel> *( \",\" <channel> ) [ <Part Message> ]
+
+  The PART command causes the user sending the message to be removed
+  from the list of active members for all given channels listed in the
+  parameter string.  If a \"Part Message\" is given, this will be sent
+  instead of the default message, the nickname.  This request is always
+  granted by the server.
+
+  Servers MUST be able to parse arguments in the form of a list of
+  target, but SHOULD NOT use lists when sending PART messages to
+  clients."
+  [network channels & [message]]
+  (network-send
+    network
+    (match [message]
+           [nil] (format "PART %s" (coll-elem-or-nil channels))
+           [_](format "PART %s :%s" (coll-elem-or-nil channels) message))))
+
+(defn pass!
+  "Parameters: <password>
+
+  The PASS command is used to set a 'connection password'.  The
+  optional password can and MUST be set before any attempt to register
+  the connection is made.  Currently this requires that user send a
+  PASS command before sending the NICK/USER combination."
+  [network password]
+  (network-send
+    network
+    (format "PASS %s" password)))
+
+(defn ping!
+  "Parameters: <server1> [ <server2> ]
+
+  The PING command is used to test the presence of an active client or
+  server at the other end of the connection.  Servers send a PING
+  message at regular intervals if no other activity detected coming
+  from a connection.  If a connection fails to respond to a PING
+  message within a set amount of time, that connection is closed.  A
+  PING message MAY be sent even if the connection is active.
+
+  When a PING message is received, the appropriate PONG message MUST be
+  sent as reply to <server1> (server which sent the PING message out)
+  as soon as possible.  If the <server2> parameter is specified, it
+  represents the target of the ping, and the message gets forwarded
+  there."
+  [network server1 & [server2]]
+  (network-send
+    network
+    (str/join " " (filter identity ["PING" server1 server2]))))
+
+(defn pong!
+  "Parameters: <server> [ <server2> ]
+
+  PONG message is a reply to ping message.  If parameter <server2> is
+  given, this message MUST be forwarded to given target.  The <server>
+  parameter is the name of the entity who has responded to PING message
+  and generated this message."
+  [network server1 & [server2]]
+  (network-send
+    network
+    (str/join " " (filter identity ["PONG" server1 server2]))))
+
 (defn message!
   [network receiver message]
   (network-send
